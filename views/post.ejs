@@ -1,0 +1,96 @@
+<div id="posts-container"></div><!--add laoding and laso move script of the rendered page-->
+
+<script>
+    async function fetchPost() {
+        const postId = window.location.pathname.split('/').pop(); //get postId from URL
+        
+        try {
+            const response = await fetch(`/api/post/${postId}`);
+            if (!response.ok) {
+            throw new Error('Network response was not ok');
+            }
+            const post = await response.json();
+            displayPost(post);
+        } catch (error) {
+            console.error('Error fetching post:', error);
+            displayError('Failed to fetch post. Please try again later.');
+        }
+    }
+
+    function displayPost(post) {
+        document.title = `${post.title}`;
+        const postsContainer = document.getElementById('posts-container');
+        const postElement = document.createElement('div');
+        postsContainer.innerHTML = '';
+        postElement.innerHTML = `
+            <strong>${post.author.username}</strong>:
+            <h3>${post.title}</h3>
+            <p>${post.body}</p>
+            <p><strong>Published:</strong> ${post.published ? 'Yes' : 'No'}</p>
+            <p><strong>Created At:</strong> ${new Date(post.createdAt).toLocaleString()}</p>
+            <h4>Comments:</h4>
+            <ul id="comments-list">
+            ${post.comments.length > 0 ? post.comments.map(comment => `
+                <li>${comment.text} - <em>by ${comment.author ? comment.author.username : 'Unknown'}</em> on ${new Date(comment.createdAt).toLocaleString()}</li>
+            `).join('') : '<li>No comments yet.</li>'}
+            </ul>
+        `;
+
+        
+        if (!window.user) { 
+            postElement.innerHTML += `
+            <form id="comment-form">
+                <textarea id="comment-text" required placeholder="Add a comment..."></textarea>
+                <button type="submit">Submit</button>
+            </form>
+            `;
+        } else {
+            postElement.innerHTML += `
+            <p>Please <a href="/signup">sign up</a> or <a href="/login">log in</a> to comment.</p>
+            `;
+        }
+
+        postsContainer.appendChild(postElement);
+
+        
+        const commentForm = document.getElementById('comment-form');
+        if (commentForm) {
+            commentForm.addEventListener('submit', submitComment);
+        }
+    }
+
+    async function submitComment(event) {
+        event.preventDefault();
+        const commentText = document.getElementById('comment-text').value;
+        const postId = window.location.pathname.split('/').pop();
+
+        try {
+            const response = await fetch(`/api/post/${postId}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: commentText }),
+            });
+
+            if (!response.ok) {
+            throw new Error('Failed to submit comment');
+            }
+
+            //refresh the post to show the new comment 
+            fetchPost();
+        } catch (error) {
+            console.error('Error submitting comment:', error);
+            displayError('Failed to submit comment. Please try again.');
+        }
+    }
+
+    function displayError(message) {
+        const errorElement = document.createElement('div');
+        errorElement.textContent = message;
+        errorElement.style.color = 'red';
+        document.body.insertBefore(errorElement, document.body.firstChild);
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchPost);
+</script>
