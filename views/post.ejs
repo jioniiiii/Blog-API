@@ -3,9 +3,14 @@
 <script>
     async function fetchPost() {
         const postId = window.location.pathname.split('/').pop(); //get postId from URL
-        
+        const token = localStorage.getItem('token'); //get JWT token from localStorage
         try {
-            const response = await fetch(`/api/post/${postId}`);
+            const response = await fetch(`/api/post/${postId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+        });
             if (!response.ok) {
             throw new Error('Network response was not ok');
             }
@@ -37,7 +42,7 @@
         `;
 
         
-        if (!window.user) { 
+        if (localStorage.getItem('token')) { 
             postElement.innerHTML += `
             <form id="comment-form">
                 <textarea id="comment-text" required placeholder="Add a comment..."></textarea>
@@ -63,14 +68,15 @@
         event.preventDefault();
         const commentText = document.getElementById('comment-text').value;
         const postId = window.location.pathname.split('/').pop();
-
+        const token = localStorage.getItem('token');
         try {
             const response = await fetch(`/api/post/${postId}/comment`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: commentText }),
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Beare ${token}`
+                },
+                body: JSON.stringify({ text: commentText }),
             });
 
             if (!response.ok) {

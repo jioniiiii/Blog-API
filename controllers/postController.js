@@ -2,7 +2,7 @@ const Post = require('../models/post');
 
 //render 
 exports.renderPostsPage = (req, res) => {
-    res.render('posts', { title: 'All Posts', user: req.user });  
+    res.render('posts', { title: 'All Posts', user: req.user || null });  
 };
 
 //GET all posts
@@ -17,7 +17,7 @@ exports.getAllPosts = async (req, res) => {
 
 //render
 exports.renderPostPage = (req, res) => {
-    res.render('post', { title: req.params.title , user: req.user });  
+    res.render('post', { title: req.params.title , user: req.user || null });  
 };
 
 //GET post

@@ -9,14 +9,9 @@
 <body>
   <div class="container">
   <header>
-    <nav>
-      <% if (user) { %> 
-          <a href="/logout" class="nav-link">Logout</a>
-      <% } else { %> 
-          <a href="/login" class="nav-link">Login</a>
-          <a href="/signup" class="nav-link">Signup</a>
-      <% } %>
-  </nav>
+    <nav id="nav-container">
+ 
+    </nav>
   </header>
   <main>
       <%- body %>
@@ -25,4 +20,27 @@
     <p>&copy; 2024 Coding Blog. All rights reserved.</p>
   </footer>
 </div>
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const navContainer = document.getElementById('nav-container');
+        
+        if (token) {
+            console.log('User is logged in');
+            navContainer.innerHTML = '<a href="#" class="nav-link" id="logout-link">Logout</a>';
+
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                window.location.reload();
+            });
+        } else {
+            console.log('User is not logged in');
+            navContainer.innerHTML = `
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/signup" class="nav-link">Signup</a>
+            `;
+        }
+    });
+</script>
 </body>

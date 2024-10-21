@@ -6,6 +6,8 @@ const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 require('dotenv').config();
 const postRoutes = require('./routes/postRoutes');
+const authRoutes = require('./routes/authRoutes');
+const guestRoutes = require('./routes/indexRoutes'); 
 
 const app = express();
 
@@ -29,10 +31,6 @@ app.use(session({
   cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
-//passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
 //mongo connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -40,9 +38,11 @@ mongoose.connect(process.env.MONGO_URI)
 
 //routes
 app.get('/', (req, res) => {
-  res.render('home', { title: 'Home', user: req.user  });
+  res.render('home', { title: 'Home', isLoggedIn: false  });
 });
 app.use('/', postRoutes);
+app.use('/', authRoutes);
+app.use('/', guestRoutes);
 
 //start server
 const PORT = process.env.PORT || 3000;
