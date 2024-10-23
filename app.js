@@ -1,10 +1,11 @@
 const express = require('express');
 const session = require('express-session');
-const passport = require('passport');
 const mongoose = require('mongoose');
 const expressLayouts = require('express-ejs-layouts');
 const path = require('path');
 require('dotenv').config();
+const cron = require('node-cron');
+const User = require('./models/user');
 const postRoutes = require('./routes/postRoutes');
 const authRoutes = require('./routes/authRoutes');
 const guestRoutes = require('./routes/indexRoutes'); 
@@ -43,6 +44,20 @@ app.get('/', (req, res) => {
 app.use('/', postRoutes);
 app.use('/', authRoutes);
 app.use('/', guestRoutes);
+
+cron.schedule('0 * * * *', async () => {
+  try {
+      const now = Date.now();
+      const expiredUsers = await User.deleteMany({
+          isGuest: true,
+          tokenExpiresAt: { $lte: now }  //delete users where token has expired
+      });
+
+      console.log(`Deleted ${expiredUsers.deletedCount} expired guest users`);
+  } catch (error) {
+      console.error('Error cleaning up expired guest users:', error);
+  }
+});
 
 //start server
 const PORT = process.env.PORT || 3000;

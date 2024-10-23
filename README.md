@@ -6,4 +6,5 @@
         -fix auth 
         -add ui 
         -fix joi validation for password
-        -fix guest fucntion for people that just want to see posts 
+        -fix guest fucntion for people that just want to see posts
+        -see if deleting guest user works and if so hash the guest password on creation  

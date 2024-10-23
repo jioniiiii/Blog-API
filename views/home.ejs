@@ -16,23 +16,18 @@
 <button class="btn">View Posts</button><!--add animation-->
 <script>
     document.querySelector('.btn').addEventListener('click', async function() {
-      try {
-        // Fetch guest token from the server
+    try {
         const response = await fetch('/guest-token');
         const data = await response.json();
-        console.log(data);
         if (data.guestToken) {
-            // Store the guest token in localStorage or sessionStorage
             localStorage.setItem('guestToken', data.guestToken);
-            
-            // Redirect the user to the posts page with the guest token
             location.href = '/posts?guest=true';
         } else {
             alert("Failed to retrieve guest token.");
         }
-      } catch (error) {
-            console.error("Error fetching guest token:", error);
-            alert("Something went wrong. Please try again.");
-      }
-    });
+    } catch (error) {
+        console.error("Error fetching guest token:", error);
+        alert("Something went wrong. Please try again.");
+    }
+});
   </script>

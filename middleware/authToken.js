@@ -10,19 +10,21 @@ const authenticateToken = (req, res, next) => {
     }
     //console.log("Token received:", token);  
 
-    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
             console.error("JWT Verification Error:", err); 
             return res.status(403).json({ message: 'Token is invalid' });
         }
 
-        //console.log("Decoded User:", user); 
-
         try {
-            const foundUser = await User.findById(user._id); 
-            if (!foundUser) return res.status(404).json({ message: 'User not found' });
+            const userId = decoded.userId;
+            const user = await User.findById(userId);//find user by id 
 
-            req.user = foundUser; //attach user object to request
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            req.user = user; //attach user object to request
             next(); //pass control to the next handler
         } catch (error) {
             console.error("Error finding user:", error);

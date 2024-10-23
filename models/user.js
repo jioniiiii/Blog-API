@@ -6,6 +6,8 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  isGuest: { type: Boolean, default: false },
+  tokenExpiresAt: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
 

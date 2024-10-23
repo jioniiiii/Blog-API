@@ -9,7 +9,7 @@ async function fetchPosts() {
         };
 
         if (token) {
-        headers['Authorization'] = `Bearer ${token}`; // Add token if available
+            headers['Authorization'] = `Bearer ${token}`; // Add token if available
         } else if (guestToken) {
             headers['Authorization'] = `Bearer ${guestToken}`; // Add guest token if available
         } else {

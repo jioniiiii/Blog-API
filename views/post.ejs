@@ -3,13 +3,26 @@
 <script>
     async function fetchPost() {
         const postId = window.location.pathname.split('/').pop(); //get postId from URL
-        const token = localStorage.getItem('token'); //get JWT token from localStorage
+        const token = localStorage.getItem('token'); 
+        const guestToken = localStorage.getItem('guestToken'); //get JWT token from localStorage
+        const headers = {
+        'Content-Type': 'application/json'
+        };
+
+        if (token) {
+        headers['Authorization'] = `Bearer ${token}`; //add token if available
+        } else if (guestToken) {
+            headers['Authorization'] = `Bearer ${guestToken}`; //add guest token if available
+        } else {
+            //if neither token is available, redirect to login or show a message
+            alert('Please log in or continue as a guest to view posts.');
+            return; 
+        }
+
         try {
             const response = await fetch(`/api/post/${postId}`, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: headers
         });
             if (!response.ok) {
             throw new Error('Network response was not ok');
