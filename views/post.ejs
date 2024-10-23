@@ -25,17 +25,17 @@
                 headers: headers
         });
             if (!response.ok) {
-            throw new Error('Network response was not ok');
+                throw new Error('Network response was not ok');
             }
-            const post = await response.json();
-            displayPost(post);
+            const { post, user } = await response.json();
+            displayPost(post, user, postId);
         } catch (error) {
             console.error('Error fetching post:', error);
             displayError('Failed to fetch post. Please try again later.');
         }
     }
 
-    function displayPost(post) {
+    function displayPost(post, user, postId) {
         document.title = `${post.title}`;
         const postsContainer = document.getElementById('posts-container');
         const postElement = document.createElement('div');
@@ -68,6 +68,15 @@
             `;
         }
 
+        if (user.role === 'admin') {
+            postElement.innerHTML += `
+                <a href='/post/${postId}/edit'>
+                    Edit Post
+                </a>
+            `;
+            console.log('lol');
+        }
+
         postsContainer.appendChild(postElement);
 
         
@@ -87,7 +96,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Beare ${token}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ text: commentText }),
             });

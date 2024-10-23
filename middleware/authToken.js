@@ -19,13 +19,13 @@ const authenticateToken = (req, res, next) => {
         try {
             const userId = decoded.userId;
             const user = await User.findById(userId);//find user by id 
-
+            //console.log(user);
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
 
             req.user = user; //attach user object to request
-            next(); //pass control to the next handler
+            next();//pass control to the next handler
         } catch (error) {
             console.error("Error finding user:", error);
             return res.status(500).json({ message: 'Failed to authenticate user' });

@@ -1,0 +1,71 @@
+<form id="edit-post-form" method="PUT">
+    <input type="text" id="post-title" name="title">
+    <textarea id="post-body" name="body"></textarea>
+    <div>
+        <label for="posted">Posted</label>
+        <input type="checkbox" name="posted" id="posted">
+    </div>
+    <button type="submit">Save Changes</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const pathParts = window.location.pathname.split('/');
+        const postId = pathParts[pathParts.length - 2]; 
+        const token = localStorage.getItem('token'); 
+
+        //fetch original data for pre-filling form
+        try { 
+            const response = await fetch(`/api/post/${postId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'content-type': 'application/json'
+                }
+            });;
+
+            if(!response.ok) {
+                throw new Error('Failed to fetch post data');
+            }
+
+            const data = await response.json(); 
+            const post = data.post; 
+
+            document.getElementById('post-title').value = post.title;
+            document.getElementById('post-body').value = post.body;
+            document.getElementById('posted').checked = post.published;
+        } catch (error) {
+            console.error('Error fetching post data:', error);
+        }
+
+        //form submision
+        const editForm = document.getElementById('edit-post-form');
+        editForm.addEventListener('submit', async(e) => {
+            e.preventDefault();
+
+            const updatedPost = {
+                title: document.getElementById('post-title').value,
+                body: document.getElementById('post-body').value,
+                published: document.getElementById('posted').checked
+            };
+
+            try {
+                const response = await fetch(`/api/post/${postId}/edit`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedPost)
+                });
+
+                if(!response.ok) {
+                    throw new Error('Failed to update post data');
+                }
+                window.location.href = `/post/${postId}`;
+            } catch (error) {
+                console.error('Error updating post:', error);
+            }
+        });
+    });
+</script>
