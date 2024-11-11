@@ -14,6 +14,8 @@ router.get('/api/post/:id', authToken, postController.getPost);
 
 //comments
 router.post('/api/post/:postId/comment', authToken, commentController.addComment);
+router.delete('/api/post/:postId/comment/:commentId/delete', authToken, commentController.deleteComment);
+router.put('/api/post/:postId/comment/:commentId/edit', authToken, commentController.editComment);
 
 //admin-edit
 router.get('/post/:id/edit', postController.renderEditPost);

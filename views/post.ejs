@@ -1,4 +1,4 @@
-<div id="posts-container"></div><!--add laoding and laso move script of the rendered page-->
+<div id="posts-container"></div><!--add laoding and laso move script of the rendered page, also add button for delet edit comment buttons-->
 
 <script>
     async function fetchPost() {
@@ -49,8 +49,20 @@
             <h4>Comments:</h4>
             <ul id="comments-list">
             ${post.comments.length > 0 ? post.comments.map(comment => `
-                <li>${comment.text} - <em>by ${comment.author ? comment.author.username : 'Unknown'}</em> on ${new Date(comment.createdAt).toLocaleString()}</li>
-            `).join('') : '<li>No comments yet.</li>'}
+                <li id="comment-${comment._id}">
+                    ${comment.text} - <em>by ${comment.author ? comment.author.username : 'Unknown'}</em>
+                    on ${new Date(comment.createdAt).toLocaleString()} 
+                   ${user.role === 'admin' || (comment.author && comment.author._id === user._id) ? `
+                    <button onclick="deleteComment('${comment._id}')">Delete</button>
+                    <button onclick="showEditForm('${comment._id}', '${comment.text}')">Edit</button>
+                ` : ''}
+                </li>
+                <form id="edit-form-${comment._id}" class="edit-form" style="display: none;" onsubmit="submitEditComment(event, '${comment._id}')">
+                        <textarea id="edit-text-${comment._id}" required>${comment.text}</textarea>
+                        <button type="submit">Update</button>
+                        <button type="button" onclick="hideEditForm('${comment._id}')">Cancel</button>
+                </form>
+                `).join('') : '<li>No comments yet.</li>'}
             </ul>
         `;
 
@@ -74,7 +86,6 @@
                     Edit Post
                 </a>
             `;
-            console.log('lol');
         }
 
         postsContainer.appendChild(postElement);
@@ -84,6 +95,15 @@
         if (commentForm) {
             commentForm.addEventListener('submit', submitComment);
         }
+
+        post.comments.forEach(comment => {
+            const editForm = document.getElementById(`edit-form-${comment._id}`);
+                if (editForm) {
+                    editForm.addEventListener('submit', function(event) {
+                        editComment(event, comment._id);
+                    });
+                }
+        });
     }
 
     async function submitComment(event) {
@@ -102,7 +122,7 @@
             });
 
             if (!response.ok) {
-            throw new Error('Failed to submit comment');
+                throw new Error('Failed to submit comment');
             }
 
             //refresh the post to show the new comment 
@@ -110,6 +130,69 @@
         } catch (error) {
             console.error('Error submitting comment:', error);
             displayError('Failed to submit comment. Please try again.');
+        }
+    }
+
+    async function deleteComment(commentId) {
+        const postId = window.location.pathname.split('/').pop();
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`/api/post/${postId}/comment/${commentId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete comment');
+            }
+
+            //refresh the post to show the new comment 
+            fetchPost();
+        } catch (error) {
+            console.error('Error  comment:', error);
+            displayError('Failed to delete comment. Please try again.');
+        }
+    }
+
+    function showEditForm(commentId, currentText) {
+        document.getElementById(`edit-form-${commentId}`).style.display = 'block';
+        document.getElementById(`edit-text-${commentId}`).value = currentText;
+    }
+
+    function hideEditForm(commentId) {
+        document.getElementById(`edit-form-${commentId}`).style.display = 'none';
+    }
+
+    async function editComment(event, commentId) {
+        event.preventDefault();
+        const postId = window.location.pathname.split('/').pop();
+        const token = localStorage.getItem('token');
+        const newText = document.getElementById(`edit-text-${commentId}`).value;
+        try {
+            const response = await fetch(`/api/post/${postId}/comment/${commentId}/edit`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ text: newText })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete comment');
+            }
+
+            const updatedComment = await response.json();
+            console.log('Comment updated:', updatedComment);
+
+            //refresh the post to show the new comment 
+            fetchPost();
+        } catch (error) {
+            console.error('Error  comment:', error);
+            displayError('Failed to edit comment. Please try again.');
         }
     }
 
